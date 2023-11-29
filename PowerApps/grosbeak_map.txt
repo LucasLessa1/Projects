@@ -1,0 +1,22 @@
+Cross_section = 636
+section_nominal = 322.265960693359 ######https://www.induscabos.com.br/portfolio-item/fios-e-cabos-de-aluminio-nu-caa-acsr/
+# cross_section_area 
+Inner_Radius = 0.00463549979031086
+Outer_Redius = 0.0125705003738403
+frequency = 60
+# temperature 
+relative_resistivity = 2.28166460990906
+relative_permeability = 1.06434440612793
+# conductor_type
+DC_resistance = 0.0917143970727921
+AC_resistance = 0.0922114998102188
+gmr = 0.0102107999846339
+x_1_ft = 0.256067007780075
+Number_of_Core_strands = 7
+Inner_Strand_Radius = 0.00154432002454996
+Number_of_Outer_strands = 26
+Outer_Strand_Radius = 0.00198628008365631																	
+
+
+grosbeak = f"""        CONDUCTOR-CHARACTERISTICS,{Inner_Radius},{Outer_Redius},1,{relative_resistivity},,{DC_resistance},{AC_resistance},1,{relative_permeability},{gmr},{x_1_ft},1,,{Number_of_Outer_strands},{Outer_Strand_Radius},0.00463549979031086,{Number_of_Core_strands},,{Inner_Strand_Radius},{section_nominal}, {Cross_section},,{frequency},0,0"""
+grosbeak
