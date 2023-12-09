@@ -70,3 +70,17 @@ def make_authenticated_request(access_token, url):
     response = requests.get(url, headers=headers)
     print(response)
     return response.json()
+
+
+
+def check_equal_columns(df):
+    
+    # Verificar se há colunas duplicadas
+    duplicatas = df.columns[df.columns.duplicated()]
+    
+    if duplicatas.any():
+        print(f'O dataset possui colunas com nomes iguais: {duplicatas.tolist()}')
+        return True
+    else:
+        print('O dataset não possui colunas com nomes iguais.')
+        return False
