@@ -84,3 +84,70 @@ def check_equal_columns(df):
     else:
         print('O dataset não possui colunas com nomes iguais.')
         return False
+
+
+def downloaded_file(id, column, name, access_token):
+
+    api_endpoint = f'https://org425ee2cf.crm.dynamics.com/api/data/v9.0/crddb_autorowreportinputsessions({id})/crddb_coordinatesfile_{column}/$value'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+    response = requests.get(api_endpoint, headers=headers)
+    if response.status_code == 200:
+        file_content = response.content
+        # Write the binary data to a file
+        with open(name, 'wb') as file:
+            file.write(file_content)
+        print("File downloaded successfully.")
+    else:
+        print(f"Failed to download the file. Status code: {response.status_code}")
+
+
+def request_conductors(access_token):
+    api_cond = 'https://org425ee2cf.crm.dynamics.com/api/data/v9.2/crddb_conductors?$top=10'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+       
+    response = requests.get(api_cond, headers=headers)
+    if response.status_code == 200:
+        data_cond = response.json()  # Assuming the response is in JSON format
+        print(data_cond)
+    
+        print("Request Done.")
+        return data_cond
+    else:
+        print(f"Request Failed. \nStatus code: {response.status_code}")
+        return None
+        
+def request_soil(access_token):
+    api_cond = 'https://org425ee2cf.crm.dynamics.com/api/data/v9.2/crddb_soilfitinputsessions?$top=10'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+       
+    response = requests.get(api_cond, headers=headers)
+    if response.status_code == 200:
+        data_soil = response.json()  # Assuming the response is in JSON format
+        print(data_soil)
+    
+        print("Request Done.")
+        return data_soil
+    else:
+        print(f"Request Failed. \nStatus code: {response.status_code}")
+        return None
+    
+    
+def request_obs(access_token):
+    api_cond = 'https://org425ee2cf.crm.dynamics.com/api/data/v9.2/new_obspoints?$top=10'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+    response = requests.get(api_cond, headers=headers)
+    if response.status_code == 200:
+        data_obs = response.json()  # Assuming the response is in JSON format
+        print(data_obs)
+        print("Request Done.")
+        return data_obs
+    else:
+        print(f"Failed to request. Status code: {response.status_code}")
