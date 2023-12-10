@@ -7,6 +7,9 @@ from selenium import webdriver
 import requests
 import pyautogui as py
 import time
+        
+import numpy as np
+import pandas as pd
 
 import clipboard
 import pandas as pd
@@ -151,3 +154,83 @@ def request_obs(access_token):
         return data_obs
     else:
         print(f"Failed to request. Status code: {response.status_code}")
+        
+def save_to_txt_file(file_name, content):
+    with open(file_name, 'w') as file:
+        file.write(content)
+    print(f"Content successfully saved to '{file_name}'.")
+    
+    
+def criar_string_duto(duto):
+    duto_dict = {'cross_section': duto['crddb_cross_section'],'Conductor_Name' : duto["crddb_name"], 'inner_Radius' : duto["crddb_innerradius"], 'outer_Radius' : duto["crddb_outerradius"], 'relative_resistivity' : duto["crddb_resistivity"], 'dc_Resistance' : duto["crddb_dc_resistance"], 'ac_Resistance' : duto["crddb_ac_resistence"], 'relative_permeability' : duto["crddb_relativepermeability"], 'GMR' : '', 'X' : 0.577875018119812}
+    duto_string = f"""  COMPONENT-TYPE,1,{duto_dict['Conductor_Name']}
+        GROUP-COMPONENT,CONDUCTOR,1,{duto_dict['Conductor_Name']},0,0,0,0
+        LAYER,CONDUCTOR,1,{duto_dict['Conductor_Name']}_Conductor
+            CONDUCTOR-CHARACTERISTICS,{duto_dict['inner_Radius']},{duto_dict['outer_Radius']},2,{duto_dict['relative_resistivity']},{duto_dict['dc_Resistance']},{duto_dict['ac_Resistance']},2,{duto_dict['relative_permeability']},{duto_dict['GMR']},{duto_dict['X']},1,7,0.00152399996295571,0,,,51.076099395752,{duto_dict['cross_section']},,60,0,0
+            DB-CONDUCTOR_INFO,SYNCHRONIZEDWITHDB,3/8 EHS-CG,Steel,60,0"""
+    return duto_string
+
+def criar_string_condutor(conductor):
+    conductor_dict = {'Conductor_Name' : conductor["crddb_name"], 'cross_section': conductor["crddb_cross_section"], 'inner_Radius' : conductor["crddb_innerradius"], 'outer_Radius' : conductor["crddb_outerradius"], 'relative_resistivity' : conductor["crddb_resistivity"], 'dc_Resistance' : conductor["crddb_dc_resistance"], 'ac_Resistance' : conductor["crddb_ac_resistence"], 'relative_permeability' : conductor["crddb_relativepermeability"], 'GMR' : conductor["crddb_gmr"], 'X' : 0.256067007780075}
+    conductor_string = f"""  COMPONENT-TYPE,1,{conductor_dict['Conductor_Name']}
+        GROUP-COMPONENT,CONDUCTOR,1,{conductor_dict['Conductor_Name']},0,0,0,0
+        LAYER,CONDUCTOR,1,{conductor_dict['Conductor_Name']}_Conductor
+            CONDUCTOR-CHARACTERISTICS,{conductor_dict["inner_Radius"]},{conductor_dict["outer_Radius"]},1,{conductor_dict["relative_resistivity"]},{conductor_dict["dc_Resistance"]},{conductor_dict["ac_Resistance"]},1,{conductor_dict["relative_permeability"]},{conductor_dict["GMR"]},{conductor_dict["X"]},1,26,0.00198628008365631,0.00463549979031086,7,0.00154432002454996,322.265960693359,{conductor_dict['cross_section']},,60,0,0
+            DB-CONDUCTOR_INFO,SYNCHRONIZEDWITHDB,{conductor_dict['Conductor_Name']},ACSR,60,0"""
+    return conductor_string
+
+
+def remove_nan_from_dict(dictionary):
+    keys_to_remove = []  # Lista para armazenar as chaves a serem removidas
+
+    for key, value in dictionary.items():
+        if isinstance(value, dict):
+            remove_nan_from_dict(value)  # Verifica os valores nos dicionários aninhados
+        elif pd.isnull(value):  # Verifica se o valor é NaN
+            keys_to_remove.append(key)  # Adiciona a chave à lista de remoção
+
+    # Remove as chaves que possuem valores NaN
+    for key in keys_to_remove:
+        dictionary[key] = ''  # Substitui o valor NaN por string vazia
+        
+
+def calculate_vector(point1, point2):
+    return point2 - point1
+
+def create_orientation_points(df, n_before, n_after, distance):
+    if len(df) < 2:
+        return pd.DataFrame()
+
+    coordinates = df.to_numpy()
+
+    # Calculate vectors
+    vector_start = calculate_vector(coordinates[0], coordinates[1])
+    vector_end = calculate_vector(coordinates[-2], coordinates[-1])
+
+    # Calculate normalized vectors
+    norm_vector_start = vector_start / np.linalg.norm(vector_start)
+    norm_vector_end = vector_end / np.linalg.norm(vector_end)
+
+    # Create points before the first coordinate
+    points_before = []
+    for i in range(int(n_before), 0, -1):
+        new_point = coordinates[0] - i * distance * norm_vector_start
+        points_before.append(np.append(new_point, 'Before'))
+
+    # Create points after the last coordinate
+    points_after = []
+    for i in range(1, int(n_after) + 1):
+        new_point = coordinates[-1] + i * distance * norm_vector_end
+        points_after.append(np.append(new_point, 'After'))
+
+    # Convert lists to DataFrames
+    df_before = pd.DataFrame(np.array(points_before), columns=list(df.columns) + ['Label'])
+    df_after = pd.DataFrame(np.array(points_after), columns=list(df.columns) + ['Label'])
+
+    # Include a Label column for the original points
+    df['Label'] = 'Original'
+
+    # Combine DataFrames
+    combined_df = pd.concat([df_before, df, df_after], ignore_index=True)
+
+    return combined_df
