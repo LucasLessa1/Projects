@@ -155,19 +155,45 @@ def request_obs(access_token):
     else:
         print(f"Failed to request. Status code: {response.status_code}")
         
+        
+def request_coating(access_token):
+    api_cond = 'https://org425ee2cf.crm.dynamics.com/api/data/v9.2/crddb_coatings?$top=10'
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+       
+    response = requests.get(api_cond, headers=headers)
+    if response.status_code == 200:
+        data_cond = response.json()  # Assuming the response is in JSON format
+        print(data_cond)
+    
+        print("Request Done.")
+        return data_cond
+    else:
+        print(f"Request Failed. \nStatus code: {response.status_code}")
+        return None
+    
+        
 def save_to_txt_file(file_name, content):
     with open(file_name, 'w') as file:
         file.write(content)
     print(f"Content successfully saved to '{file_name}'.")
     
+def criar_string_duto(duto, coating):
     
-def criar_string_duto(duto):
+    type_ = "AREARESISTANCE"
+    
+    if coating["crddb_area_resistance"] == None:
+        type_ = "RESISTIVITY"
+    
     duto_dict = {'cross_section': duto['crddb_cross_section'],'Conductor_Name' : duto["crddb_name"], 'inner_Radius' : duto["crddb_innerradius"], 'outer_Radius' : duto["crddb_outerradius"], 'relative_resistivity' : duto["crddb_resistivity"], 'dc_Resistance' : duto["crddb_dc_resistance"], 'ac_Resistance' : duto["crddb_ac_resistence"], 'relative_permeability' : duto["crddb_relativepermeability"], 'GMR' : '', 'X' : 0.577875018119812}
     duto_string = f"""  COMPONENT-TYPE,1,{duto_dict['Conductor_Name']}
         GROUP-COMPONENT,CONDUCTOR,1,{duto_dict['Conductor_Name']},0,0,0,0
         LAYER,CONDUCTOR,1,{duto_dict['Conductor_Name']}_Conductor
             CONDUCTOR-CHARACTERISTICS,{duto_dict['inner_Radius']},{duto_dict['outer_Radius']},2,{duto_dict['relative_resistivity']},{duto_dict['dc_Resistance']},{duto_dict['ac_Resistance']},2,{duto_dict['relative_permeability']},{duto_dict['GMR']},{duto_dict['X']},1,7,0.00152399996295571,0,,,51.076099395752,{duto_dict['cross_section']},,60,0,0
-            DB-CONDUCTOR_INFO,SYNCHRONIZEDWITHDB,3/8 EHS-CG,Steel,60,0"""
+            DB-CONDUCTOR_INFO,SYNCHRONIZEDWITHDB,3/8 EHS-CG,Steel,60,0
+        LAYER,INSULATION,2,Pipes-Steel_10" 140_Conductor - Insulation
+            INSULATION-CHARACTERISTICS,{type_},{duto_dict['outer_Radius']},{duto_dict['outer_Radius'] + coating['crddb_thickness']},{coating['crddb_area_resistance']},{coating['crddb_permittivity']},{coating['crddb_permittivity']}"""
     return duto_string
 
 def criar_string_condutor(conductor):
@@ -234,3 +260,4 @@ def create_orientation_points(df, n_before, n_after, distance):
     combined_df = pd.concat([df_before, df, df_after], ignore_index=True)
 
     return combined_df
+
