@@ -193,7 +193,7 @@ def criar_string_duto(duto, coating):
             CONDUCTOR-CHARACTERISTICS,{duto_dict['inner_Radius']},{duto_dict['outer_Radius']},2,{duto_dict['relative_resistivity']},{duto_dict['dc_Resistance']},{duto_dict['ac_Resistance']},2,{duto_dict['relative_permeability']},{duto_dict['GMR']},{duto_dict['X']},1,7,0.00152399996295571,0,,,51.076099395752,{duto_dict['cross_section']},,60,0,0
             DB-CONDUCTOR_INFO,SYNCHRONIZEDWITHDB,3/8 EHS-CG,Steel,60,0
         LAYER,INSULATION,2,Pipes-Steel_10" 140_Conductor - Insulation
-            INSULATION-CHARACTERISTICS,{type_},{duto_dict['outer_Radius']},{duto_dict['outer_Radius'] + coating['crddb_thickness']},{coating['crddb_area_resistance']},{coating['crddb_permittivity']},{coating['crddb_permittivity']}"""
+            INSULATION-CHARACTERISTICS,{type_},{duto_dict['outer_Radius']},{duto_dict['outer_Radius'] + coating['crddb_thickness']},{coating['crddb_area_resistance']},{coating['crddb_permittivity']},{coating['crddb_permeability']}"""
     return duto_string
 
 def criar_string_condutor(conductor):
