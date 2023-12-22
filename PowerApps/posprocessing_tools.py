@@ -1,6 +1,47 @@
 import pandas as pd
 import numpy as np
 
+def extract_data_MZ(file_path, num_columns, start_string, finish_string):
+    # Open the text file and read its content
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    # Find the starting index of relevant data after the start_string
+    start_index = None
+    for i, line in enumerate(lines):
+        if start_string in line:
+            start_index = i + 1  # Move one line below the line containing the start_string
+            break
+
+    # Find the ending index of relevant data before the finish_string
+    end_index = None
+    for i, line in enumerate(lines[start_index:]):
+        if finish_string in line:
+            end_index = start_index + i  # Set the end_index
+            break
+
+    # Process the data between start_index and end_index
+    if start_index is not None and end_index is not None:
+        data = []
+        for line in lines[start_index:end_index]:
+            line = line.strip()
+            if line:
+                row_data = line.split()
+                if len(row_data) == num_columns:
+                    data.append(row_data)
+    else:
+        print("Start or end index not found.")
+
+    # Convert the extracted data into a DataFrame
+    if 'data' in locals() and data:
+        df = pd.DataFrame(data)
+        print("Data extracted as DataFrame:")
+        return df
+    else:
+        print("No data extracted or error in data extraction.")
+        return None
+
+
 def extract_data_to_dataframe(file_path, column_names, string_finder):
     # Open the text file and read its content
     with open(file_path, 'r') as file:
@@ -10,7 +51,7 @@ def extract_data_to_dataframe(file_path, column_names, string_finder):
     start_index = None
     for i, line in enumerate(lines):
         if string_finder in line:
-            start_index = i + 3  # Considering there are three empty lines after the target line
+            start_index = i  + 4 # Considering there are three empty lines after the target line
             break
 
     # Process the data after the identified start index
@@ -20,7 +61,7 @@ def extract_data_to_dataframe(file_path, column_names, string_finder):
             line = line.strip()
             if line:
                 row_data = line.split()
-                if len(row_data) == 9:  # Assuming each line contains 9 elements
+                if len(row_data) == len(column_names):  # Assuming each line contains 9 elements
                     data.append(row_data)
     else:
         print("Start index not found.")
@@ -54,13 +95,13 @@ def filter_data_by_section(df, section):
         return None
     
     
-def remove_rows_with_equals(df):
+def remove_rows_with(df, str_garbage):
     # Remove rows containing "=" in any column
-    df_no_equals = df[~df.apply(lambda row: row.astype(str).str.contains('=')).any(axis=1)]
+    df_no_equals = df[~df.apply(lambda row: row.astype(str).str.contains(str_garbage)).any(axis=1)]
     return df_no_equals
 
 
-def convert_to_real_imaginary_specific_columns(df, columns_to_convert):
+def convert_to_real_imag(df, columns_to_convert):
     df_ = df
     
     for column in columns_to_convert:
@@ -79,3 +120,18 @@ def convert_to_real_imaginary_specific_columns(df, columns_to_convert):
     df_ = df_.drop(columns_to_convert, axis=1)
     
     return df_
+
+
+def remove_nan_rows(df):
+    # Drop rows with NaN values
+    df_without_nan = df.dropna(axis=0, how='any')
+    return df_without_nan
+
+
+def processing_MZ_data(df, new_columns):
+    df_ = df
+    df_ = remove_rows_with(df_, str_garbage='=')
+    df_.columns = new_columns
+    df_ = convert_columns_to_float(df_, new_columns)
+    return df_
+    
