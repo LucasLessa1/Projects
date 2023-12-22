@@ -372,7 +372,7 @@ def create_string_duct(duct, coating):
         'ac_Resistance': duct["crddb_ac_resistence"],
         'relative_permeability': duct["crddb_relativepermeability"],
         'GMR': '',
-        'X ': 0.577875018119812
+        'X': 0.577875018119812
     }
     
     duct_string = f""" COMPONENT-TYPE,1,{duct_dict['Conductor_Name']}
@@ -521,3 +521,125 @@ def create_orientation_points(df, n_before, n_after, distance):
     combined_df = pd.concat([df_before, df, df_after], ignore_index=True)
 
     return combined_df
+
+
+
+
+def create_phase_dict(name, id, ph, ground_point, cartesian1, R, X, polar2, line2neutral_kv,
+                    line2neutral_deg, current_mag_ka, current_ang_deg):
+    """
+    Create a phase dictionary with specific parameters.
+
+    Args:
+    - name (str): Name of the phase.
+    - id (int): Identifier of the phase.
+    - ph (str): Phase details.
+    - ground_point (tuple): Coordinates of the ground point.
+    - cartesian1 (tuple): Coordinates of the point.
+    - R (float): Resistance value.
+    - X (float): Reactance value.
+    - polar2 (float): [Description of polar2]
+    - line2neutral_kv (float): Line to neutral kilovolts.
+    - line2neutral_deg (float): Line to neutral degrees.
+
+    Returns:
+    - dict: A dictionary containing phase information.
+    """
+    return {
+        'name': name,
+        'id': id,
+        'ph': ph,
+        'ground_point': ground_point,
+        'cartesian1': cartesian1,
+        'R': R,
+        'X': X,
+        'polar2': polar2,
+        'line2neutral_kv': line2neutral_kv,
+        'line2neutral_deg': line2neutral_deg,
+        'current_mag_ka': current_mag_ka,
+        'current_ang_deg': current_ang_deg
+    }
+
+
+
+
+def add_new_row(dataFrame):
+    """
+    Adds a new row to the beginning of the DataFrame by incrementing the first row by 0.01.
+
+    Args:
+    - dataFrame (pd.DataFrame): The DataFrame to which a new row will be added.
+
+    Returns:
+    - pd.DataFrame: DataFrame with a new row added at the beginning.
+    """
+    new_row = dataFrame.iloc[0].copy() + 0.01
+    dataFrame = pd.concat([pd.DataFrame(new_row).transpose(), dataFrame], ignore_index=True)
+    return dataFrame
+
+
+
+
+def generate_points(dataFrame, name='', rho=1, xs=1, type_=-2, is_DT=False):
+    """
+    Generates either LT (Line-to-Transverse) or DT (Distribution Transformer) points
+    based on the DataFrame coordinates.
+
+    Args:
+    - dataFrame (pd.DataFrame): DataFrame containing coordinates.
+    - name (str): Name associated with the points.
+    - rho (int/float): Value for 'rho' in the generated points.
+    - xs (int/float): Value for 'xs' in the generated points.
+    - type_ (int): Type of point (default value is -2).
+    - is_DT (bool): If True, generates DT points; otherwise, generates LT points.
+
+    Returns:
+    - str: String containing points information formatted for use.
+    """
+    points = []
+    for index, row in dataFrame.iterrows():
+        x = row[0]
+        y = row[1]
+
+        if is_DT:
+            something = 10 if index == 0 else 0
+            point_info = f'      POINT,{index+1},{name},{x},{y},0,{something},{rho},{type_},{xs},0'
+        else:
+            x = x + 0.01 if index == 0 else x
+            type_ = -1 if index == 0 else -2
+            point_info = f'      POINT,{index+1},{name},{x},{y},0,0,{rho},{type_},{xs},0'
+
+        points.append(point_info)
+
+    return '\n'.join(points)
+
+
+
+
+def generate_leakage_info(energization_info, data_df):
+    """
+    Generate leakage information based on energization details and tower ground impedance data.
+
+    Args:
+    - energization_info (list): List containing energization information, each item being a dictionary with keys like 'name' and 'id'.
+    - data_df (pd.DataFrame): DataFrame containing tower ground impedance data.
+
+    Returns:
+    - str: String containing formatted leakage information based on the given data.
+    """
+    lista = []
+    r_sw = data_df.iloc[0]['crddb_groundimpedance_towers_r']   
+    x_sw = data_df.iloc[0]['crddb_groundimpedance_towers_x']
+    
+    for i in energization_info:
+        if i["name"] == 'sw':
+            tower_ground_imped = [r_sw, x_sw]
+            leakage_type = "OHMSPERTOWER"
+        else:
+            tower_ground_imped = [9999999, 9999999]
+            leakage_type = "COMPUTED"
+
+        leakage_info = f'    LEAKAGE,{leakage_type},{i["id"]},{i["name"]},0,{tower_ground_imped[0]},{tower_ground_imped[1]}'
+        lista.append(leakage_info)
+
+    return '\n'.join(lista)
