@@ -138,7 +138,7 @@ def request_autorow(access_token: str) -> dict:
     }
 
     response = requests.get(url, headers=headers)
-
+    print(response)
     return response.json()
 
 
@@ -395,7 +395,7 @@ def create_string_duct(duct: dict, coating: dict) -> str:
 
 
 
-def create_string_conductor(conductor: dict) -> str:
+def create_string_conductor(conductor: dict, idx: int) -> str:
     """
     Creates a string representing conductor characteristics.
 
@@ -418,7 +418,7 @@ def create_string_conductor(conductor: dict) -> str:
         'X': 0.256067007780075
     }
     
-    conductor_string = f"""  COMPONENT-TYPE,1,{conductor_dict['Conductor_Name']}
+    conductor_string = f"""  COMPONENT-TYPE,{idx},{conductor_dict['Conductor_Name']}
         GROUP-COMPONENT,CONDUCTOR,1,{conductor_dict['Conductor_Name']},0,0,0,0
         LAYER,CONDUCTOR,1,{conductor_dict['Conductor_Name']}_Conductor
             CONDUCTOR-CHARACTERISTICS,{conductor_dict["inner_Radius"]},{conductor_dict["outer_Radius"]},1,
@@ -647,3 +647,114 @@ def generate_leakage_info(energization_info: List[Dict[str, str]], data_df: pd.D
         lista.append(leakage_info)
 
     return '\n'.join(lista)
+
+
+
+
+def add_condtype_id(driver_info_list: List[Dict[str, Any]]) -> None:
+    """
+    Adds 'condtype_id' to each dictionary in the list based on 'condtype_value' uniqueness.
+
+    Args:
+    - driver_info_list (List[Dict[str, Any]]): List of dictionaries containing 'condtype_value' keys.
+
+    Returns:
+    - None
+    """
+    # Extract unique condtype_values from driver_info_list
+    condtype_values = [d['condtype_value'] for d in driver_info_list]
+    unique_condtype_values = list(set(condtype_values))
+
+    # Create a dictionary mapping condtype_values to unique integer IDs
+    condtype_id_mapping = {value: index + 1 for index, value in enumerate(unique_condtype_values)}
+
+    # Update each dictionary in driver_info_list with condtype_id based on the mapping
+    for driver_info in driver_info_list:
+        condtype_value = driver_info.get("condtype_value")
+        if condtype_value in condtype_id_mapping:
+            driver_info["condtype_id"] = condtype_id_mapping[condtype_value]
+        else:
+            pass  # Do something if the condtype_value is not found in mapping
+
+
+
+
+def generate_total_cross_section(circuit_type: int,
+                                 energization_info_lt: List[Dict[str, Any]],
+                                 phase_cross_section: str,
+                                 condutores_rowCAD: str,
+                                 condutores: List[Dict[str, Any]]) -> str:
+    """
+    Generates the total cross-section based on the provided parameters.
+
+    Args:
+    - circuit_type (int): Type of circuit.
+    - energization_info_lt (List[Dict[str, Any]]): Information about energization for LT.
+    - phase_cross_section (str): Phase cross-section details.
+    - condutores_rowCAD (str): Condutores rowCAD details.
+    - condutores (List[Dict[str, Any]]): List of dictionaries containing conductor details.
+
+    Returns:
+    - str: String representing the total cross-section generated based on the given parameters.
+    """
+    if circuit_type==1:
+        total_cross_section1_LT = f"""CROSSSECTION
+OPTIONS
+    CONFIGURATION-MODE,ROW
+    UNITS,METRIC
+{phase_cross_section}
+{condutores_rowCAD}
+SYSTEM
+    SUBSET,1,Set #1
+    COMPONENT,1,Component #1,{condutores[0]['crddb_c1a_horizontal']},{condutores[0]['crddb_c1a_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[0]['condtype_id']},{condutores[0]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[0]["id"]},0,0
+    COMPONENT,2,Component #2,{condutores[1]['crddb_c1b_horizontal']},{condutores[1]['crddb_c1b_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[1]['condtype_id']},{condutores[1]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[1]["id"]},0,0
+    COMPONENT,3,Component #3,{condutores[2]['crddb_c1c_horizontal']},{condutores[2]['crddb_c1c_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[2]['condtype_id']},{condutores[2]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[2]["id"]},0,0
+    COMPONENT,4,Component #4,{condutores[3]['crddb_shieldwirehorizontal1']},{condutores[3]['crddb_shieldwirevertical1']},1
+        INFO-GROUPCOMPONENT,{condutores[3]['condtype_id']},{condutores[3]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[-2]["id"]},0,0
+    COMPONENT,5,Component #5,{condutores[4]['crddb_shieldwirehorizontal2']},{condutores[4]['crddb_shieldwirevertical2']},1
+        INFO-GROUPCOMPONENT,{condutores[4]['condtype_id']},{condutores[4]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[-2]["id"]},0,0
+ENDPROGRAM"""
+            
+    elif circuit_type==2:
+        total_cross_section1_LT = f"""CROSSSECTION
+OPTIONS
+    CONFIGURATION-MODE,ROW
+    UNITS,METRIC
+{phase_cross_section}
+{condutores_rowCAD}
+SYSTEM
+    SUBSET,1,Set #1
+    COMPONENT,1,Component #1,{condutores[0]['crddb_c1a_horizontal']},{condutores[0]['crddb_c1a_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[0]['condtype_id']},{condutores[0]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[0]["id"]},0,0
+    COMPONENT,2,Component #2,{condutores[1]['crddb_c1b_horizontal']},{condutores[1]['crddb_c1b_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[1]['condtype_id']},{condutores[1]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[1]["id"]},0,0
+    COMPONENT,3,Component #3,{condutores[2]['crddb_c1c_horizontal']},{condutores[2]['crddb_c1c_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[2]['condtype_id']},{condutores[2]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[2]["id"]},0,0
+    COMPONENT,4,Component #4,{condutores[3]['crddb_c2a_horizontal']},{condutores[3]['crddb_c2a_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[3]['condtype_id']},{condutores[3]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[3]["id"]},0,0
+    COMPONENT,5,Component #5,{condutores[4]['crddb_c2b_horizontal']},{condutores[4]['crddb_c2b_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[4]['condtype_id']},{condutores[4]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[4]["id"]},0,0
+    COMPONENT,6,Component #6,{condutores[5]['crddb_c2c_horizontal']},{condutores[5]['crddb_c2c_vertical']},1
+        INFO-GROUPCOMPONENT,{condutores[5]['condtype_id']},{condutores[5]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[5]["id"]},0,0
+    COMPONENT,7,Component #4,{condutores[6]['crddb_shieldwirehorizontal1']},{condutores[6]['crddb_shieldwirevertical1']},1
+        INFO-GROUPCOMPONENT,{condutores[6]['condtype_id']},{condutores[6]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[-2]["id"]},0,0
+    COMPONENT,8,Component #5,{condutores[7]['crddb_shieldwirehorizontal2']},{condutores[7]['crddb_shieldwirevertical2']},1
+        INFO-GROUPCOMPONENT,{condutores[7]['condtype_id']},{condutores[7]['crddb_name']}
+        INFO-PHASE-CIRCUIT,1,{energization_info_lt[-2]["id"]},0,0
+ENDPROGRAM"""
+    return total_cross_section1_LT
