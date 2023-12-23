@@ -1,15 +1,17 @@
 from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 import requests
 import pyautogui as py
 import time
 import numpy as np
 import pandas as pd
 import clipboard
+from typing import Union, Dict, Any, Tuple, List
 
 
 
 
-def take_request(user, password):
+def take_request(user: str, password: str) -> tuple[str, str]:
     """
     Initiates the process to obtain an access token for accessing Dynamics CRM services.
 
@@ -43,7 +45,7 @@ def take_request(user, password):
 
 
 
-def take_callback_url(auth_url, driver, user, password):
+def take_callback_url(auth_url: str, driver: WebDriver, user: str, password: str) -> str:
     """
     Navigates to the authentication URL, enters user credentials, and retrieves the callback URL.
 
@@ -79,7 +81,7 @@ def take_callback_url(auth_url, driver, user, password):
 
 
 
-def get_access_token(callback_url, client_id, callback_base_url, url):
+def get_access_token(callback_url: str, client_id: str, callback_base_url: str, url: str) -> str:
     """
     Obtains an access token from a callback URL using OAuth2.0 authentication.
 
@@ -119,7 +121,7 @@ def get_access_token(callback_url, client_id, callback_base_url, url):
 
 
 
-def request_autorow(access_token):
+def request_autorow(access_token: str) -> dict:
     """
     Retrieves autorow report input sessions from Dynamics CRM using the provided access token.
 
@@ -142,7 +144,7 @@ def request_autorow(access_token):
 
 
 
-def check_equal_columns(df):
+def check_equal_columns(df: pd.DataFrame) -> bool:
     """
     Checks for duplicate column names within the DataFrame.
 
@@ -165,7 +167,7 @@ def check_equal_columns(df):
 
 
 
-def downloaded_file(id, column, name, access_token):
+def downloaded_file(id: str or int, column: str, name: str, access_token: str) -> None:
     """
     Downloads a file associated with a specific ID and column from Dynamics CRM.
 
@@ -195,7 +197,7 @@ def downloaded_file(id, column, name, access_token):
 
 
 
-def request_conductors(access_token):
+def request_conductors(access_token: str) -> Union[dict, None]:
     """
     Retrieves conductor information from Dynamics CRM using the provided access token.
 
@@ -225,7 +227,7 @@ def request_conductors(access_token):
 
 
         
-def request_soil(access_token):
+def request_soil(access_token: str) -> Union[dict, None]:
     """
     Retrieves soil fit input sessions from Dynamics CRM using the provided access token.
 
@@ -255,7 +257,7 @@ def request_soil(access_token):
 
 
     
-def request_obs(access_token):
+def request_obs(access_token: str) -> Union[dict, None]:
     """
     Retrieves observation points from Dynamics CRM using the provided access token.
 
@@ -283,7 +285,7 @@ def request_obs(access_token):
         
 
         
-def request_coating(access_token):
+def request_coating(access_token: str) -> Union[dict, None]:
     """
     Requests coating data from Dynamics CRM using the provided access token.
 
@@ -312,7 +314,7 @@ def request_coating(access_token):
 
 
 
-def df_columns(data, column):
+def df_columns(data: dict, column: str) -> Union[pd.DataFrame, None]:
     """
     Extracts a specific column from a DataFrame contained within the provided data dictionary.
 
@@ -321,7 +323,7 @@ def df_columns(data, column):
     - column (str): Column name to extract from the DataFrame.
 
     Returns:
-    - pandas Series or None: Returns the specified column as a pandas Series.
+    - pandas DataFrame or None: Returns the specified column as a pandas Series.
       Returns None if the DataFrame or specified column is not found.
     """
     dataFrame = pd.DataFrame(data['value'])
@@ -331,7 +333,7 @@ def df_columns(data, column):
 
 
         
-def save_to_txt_file(file_name, content):
+def save_to_txt_file(file_name: str, content: str) -> None:
     """
     Saves content to a text file with the provided filename.
 
@@ -349,7 +351,7 @@ def save_to_txt_file(file_name, content):
 
 
     
-def create_string_duct(duct, coating):
+def create_string_duct(duct: dict, coating: dict) -> str:
     """
     Creates a string representing duct characteristics.
 
@@ -393,7 +395,7 @@ def create_string_duct(duct, coating):
 
 
 
-def create_string_conductor(conductor):
+def create_string_conductor(conductor: dict) -> str:
     """
     Creates a string representing conductor characteristics.
 
@@ -430,7 +432,7 @@ def create_string_conductor(conductor):
 
 
 
-def remove_nan_from_dict(dictionary):
+def remove_nan_from_dict(dictionary: dict) -> dict:    
     """
     Recursively removes NaN values from a nested dictionary by replacing them with an empty string.
 
@@ -456,7 +458,7 @@ def remove_nan_from_dict(dictionary):
         
 
 
-def calculate_vector(point1, point2):
+def calculate_vector(point1: np.ndarray or list or tuple, point2: np.ndarray or list or tuple) -> np.ndarray:
     """
     Calculate the vector between two points.
 
@@ -472,7 +474,7 @@ def calculate_vector(point1, point2):
 
 
 
-def create_orientation_points(df, n_before, n_after, distance):
+def create_orientation_points(df: pd.DataFrame, n_before: int, n_after: int, distance: float) -> pd.DataFrame:
     """
     Create orientation points before and after the coordinates in the DataFrame.
 
@@ -525,8 +527,9 @@ def create_orientation_points(df, n_before, n_after, distance):
 
 
 
-def create_phase_dict(name, id, ph, ground_point, cartesian1, R, X, polar2, line2neutral_kv,
-                    line2neutral_deg, current_mag_ka, current_ang_deg):
+def create_phase_dict(name: str, id: int, ph: str, ground_point: Tuple[float, float], cartesian1: Tuple[float, float],
+                      R: float, X: float, polar2: float, line2neutral_kv: float, line2neutral_deg: float,
+                      current_mag_ka: float, current_ang_deg: float) -> Dict[str, Any]:
     """
     Create a phase dictionary with specific parameters.
 
@@ -563,7 +566,7 @@ def create_phase_dict(name, id, ph, ground_point, cartesian1, R, X, polar2, line
 
 
 
-def add_new_row(dataFrame):
+def add_new_row(dataFrame: pd.DataFrame) -> pd.DataFrame:
     """
     Adds a new row to the beginning of the DataFrame by incrementing the first row by 0.01.
 
@@ -580,7 +583,8 @@ def add_new_row(dataFrame):
 
 
 
-def generate_points(dataFrame, name='', rho=1, xs=1, type_=-2, is_DT=False):
+def generate_points(dataFrame: pd.DataFrame, name: str = '', rho: float = 1, xs: float = 1,
+                    type_: int = -2, is_DT: bool = False) -> str:
     """
     Generates either LT (Line-to-Transverse) or DT (Distribution Transformer) points
     based on the DataFrame coordinates.
@@ -616,7 +620,7 @@ def generate_points(dataFrame, name='', rho=1, xs=1, type_=-2, is_DT=False):
 
 
 
-def generate_leakage_info(energization_info, data_df):
+def generate_leakage_info(energization_info: List[Dict[str, str]], data_df: pd.DataFrame) -> str:
     """
     Generate leakage information based on energization details and tower ground impedance data.
 
