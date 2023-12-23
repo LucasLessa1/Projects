@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+from typing import Optional, Tuple
 
-def calculate_length(df):
+def calculate_length(df: pd.DataFrame) -> float:
     """
     Calculates the length of a path represented by a DataFrame.
 
@@ -22,7 +23,7 @@ def calculate_length(df):
 
 
 
-def find_row_with_text(file_path, text):
+def find_row_with_text(file_path: str, text: str) -> Optional[Tuple[int, str]]:
     """
     Finds the line number and content in a file containing the specified text.
 
@@ -46,7 +47,7 @@ def find_row_with_text(file_path, text):
 
 
 
-def modify_file_and_save(input_file, output_file, search_text, replacement_text):
+def modify_file_and_save(input_file: str, output_file: str, search_text: str, replacement_text: str) -> None:
     """
     Modifies a file by replacing specified text and saves the modified content to a new file.
 
