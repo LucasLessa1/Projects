@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+from typing import List, Union
 
-def extract_data_MZ(file_path, num_columns, start_string, finish_string):
+def extract_data_MZ(file_path: str, num_columns: int, start_string: str, finish_string: str) -> pd.DataFrame or None:
     """
     Extracts data from a text file located at 'file_path' based on provided criteria.
 
@@ -57,7 +58,7 @@ def extract_data_MZ(file_path, num_columns, start_string, finish_string):
 
 
 
-def extract_data_to_dataframe(file_path, column_names, string_finder):
+def extract_data_to_dataframe(file_path: str, column_names: List[str], string_finder: str) -> Union[pd.DataFrame, None]:
     """
     Extracts data from a text file located at 'file_path' based on provided criteria and converts it into a DataFrame.
 
@@ -105,7 +106,7 @@ def extract_data_to_dataframe(file_path, column_names, string_finder):
 
 
 
-def convert_columns_to_float(df, columns_to_convert):
+def convert_columns_to_float(df: pd.DataFrame, columns_to_convert: Union[List[str], str]) -> pd.DataFrame:
     """
     Converts specified columns in a DataFrame to float data type.
 
@@ -122,7 +123,7 @@ def convert_columns_to_float(df, columns_to_convert):
 
 
 
-def filter_data_by_section(df, section):
+def filter_data_by_section(df: pd.DataFrame, section: Union[str, int]) -> Union[pd.DataFrame, None]:
     """
     Filters a DataFrame by a specified 'SECTION' column value.
 
@@ -148,7 +149,7 @@ def filter_data_by_section(df, section):
     
 
     
-def remove_rows_with(df, str_garbage):
+def remove_rows_with(df: pd.DataFrame, str_garbage: str) -> pd.DataFrame:
     """
     Removes rows containing specified string garbage in any column of the DataFrame.
 
@@ -166,7 +167,7 @@ def remove_rows_with(df, str_garbage):
 
 
 
-def convert_to_real_imag(df, columns_to_convert):
+def convert_to_real_imag(df: pd.DataFrame, columns_to_convert: List[str]) -> pd.DataFrame:
     """
     Converts columns representing polar coordinates to their corresponding real and imaginary parts.
 
@@ -198,7 +199,7 @@ def convert_to_real_imag(df, columns_to_convert):
 
 
 
-def remove_nan_rows(df):
+def remove_nan_rows(df: pd.DataFrame) -> pd.DataFrame:
     """
     Removes rows containing NaN values in the DataFrame.
 
@@ -215,7 +216,7 @@ def remove_nan_rows(df):
 
 
 
-def processing_MZ_data(df, new_columns):
+def processing_MZ_data(df: pd.DataFrame, new_columns: List[str]) -> pd.DataFrame:
     """
     Performs data processing operations on a DataFrame.
 
